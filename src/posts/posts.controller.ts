@@ -9,55 +9,48 @@ import {
   ParseIntPipe,
   Post,
   Put,
-  Query,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
-import type { Post as PostInterface } from './interfaces/post.interface';
-import { PostsService } from './posts.service';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { Post as PostEntity } from './entities/post.entity';
 import { PostExistsPipe } from './pipes/post-exists.pipe';
+import { PostsService } from './posts.service';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  getAllPosts(@Query('search') search?: string): PostInterface[] {
-    const extractAllPosts = this.postsService.getAllPosts();
-
-    if (search) {
-      return extractAllPosts.filter((post) =>
-        post.title.toLowerCase().includes(search.toLowerCase()),
-      );
-    }
-
-    return extractAllPosts;
+  async getAllPosts(): Promise<PostEntity[]> {
+    return this.postsService.getAllPosts();
   }
 
   @Get(':id')
-  getSinglePost(
+  async getSinglePost(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
-  ): PostInterface {
+  ): Promise<PostEntity> {
     return this.postsService.getSinglePost(id);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createPost(@Body() newPostData: CreatePostDto): PostInterface {
+  async createPost(@Body() newPostData: CreatePostDto): Promise<PostEntity> {
     return this.postsService.createPost(newPostData);
   }
 
   @Put(':id')
-  updatePost(
+  async updatePost(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
     @Body() updatePostData: UpdatePostDto,
-  ): PostInterface {
+  ): Promise<PostEntity> {
     return this.postsService.updatePost(id, updatePostData);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deletePost(@Param('id', ParseIntPipe, PostExistsPipe) id: number): void {
+  async deletePost(
+    @Param('id', ParseIntPipe, PostExistsPipe) id: number,
+  ): Promise<void> {
     this.postsService.deletePost(id);
   }
 }
