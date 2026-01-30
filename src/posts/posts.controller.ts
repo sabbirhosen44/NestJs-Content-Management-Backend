@@ -11,16 +11,17 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from 'src/auth/entities/user.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post as PostEntity } from './entities/post.entity';
 import { PostExistsPipe } from './pipes/post-exists.pipe';
 import { PostsService } from './posts.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { UserRole } from 'src/auth/entities/user.entity';
 
 @Controller('posts')
 export class PostsController {
@@ -40,6 +41,7 @@ export class PostsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.CREATED)
   async createPost(
     @Body() createPostDto: CreatePostDto,
@@ -50,6 +52,7 @@ export class PostsController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   async updatePost(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
     @Body() updatePostData: UpdatePostDto,
@@ -61,6 +64,7 @@ export class PostsController {
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
