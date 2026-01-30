@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
@@ -22,14 +23,19 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { Post as PostEntity } from './entities/post.entity';
 import { PostExistsPipe } from './pipes/post-exists.pipe';
 import { PostsService } from './posts.service';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
+import { FindPostsQueryDto } from './dto/find-posts-query.dto';
+import { PaginationResponse } from 'src/common/interfaces/paginated-response.interface';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  async getAllPosts(): Promise<PostEntity[]> {
-    return this.postsService.getAllPosts();
+  async getAllPosts(
+    @Query() query: FindPostsQueryDto,
+  ): Promise<PaginationResponse<PostEntity>> {
+    return this.postsService.getAllPosts(query);
   }
 
   @Get(':id')

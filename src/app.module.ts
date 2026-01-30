@@ -1,12 +1,13 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PostsModule } from './posts/posts.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -25,6 +26,11 @@ import { APP_GUARD } from '@nestjs/core';
           rejectUnauthorized: false,
         },
       }),
+    }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 30000,
+      max: 100,
     }),
     ThrottlerModule.forRoot({
       throttlers: [
