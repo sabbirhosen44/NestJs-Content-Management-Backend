@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
+import { User, UserRole } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class PostsService {
@@ -13,11 +18,16 @@ export class PostsService {
   ) {}
 
   async getAllPosts(): Promise<Post[]> {
-    return this.postsRepository.find();
+    return this.postsRepository.find({
+      relations: ['authorName'],
+    });
   }
 
   async getSinglePost(postId: number): Promise<Post> {
-    const singlePost = await this.postsRepository.findOneBy({ id: postId });
+    const singlePost = await this.postsRepository.findOne({
+      where: { id: postId },
+      relations: ['authorName'],
+    });
 
     if (!singlePost) {
       throw new NotFoundException(`Post with ID ${postId} is not found!`);
@@ -26,11 +36,14 @@ export class PostsService {
     return singlePost;
   }
 
-  async createPost(newPostData: CreatePostDto): Promise<Post> {
+  async createPost(
+    newPostData: CreatePostDto,
+    authorName: User,
+  ): Promise<Post> {
     const newPost = this.postsRepository.create({
       title: newPostData.title,
       content: newPostData.content,
-      authorName: newPostData.authorName,
+      authorName,
     });
 
     return this.postsRepository.save(newPost);
@@ -39,8 +52,16 @@ export class PostsService {
   async updatePost(
     postId: number,
     updatePostData: UpdatePostDto,
+    user: User,
   ): Promise<Post> {
     const findPostToUpdate = await this.getSinglePost(postId);
+
+    if (
+      findPostToUpdate.authorName.id === user.id &&
+      user.role !== UserRole.ADMIN
+    ) {
+      throw new ForbiddenException('You can only update your own posts');
+    }
 
     Object.assign(findPostToUpdate, updatePostData);
 

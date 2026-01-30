@@ -9,12 +9,18 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post as PostEntity } from './entities/post.entity';
 import { PostExistsPipe } from './pipes/post-exists.pipe';
 import { PostsService } from './posts.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { UserRole } from 'src/auth/entities/user.entity';
 
 @Controller('posts')
 export class PostsController {
@@ -33,20 +39,28 @@ export class PostsController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
-  async createPost(@Body() newPostData: CreatePostDto): Promise<PostEntity> {
-    return this.postsService.createPost(newPostData);
+  async createPost(
+    @Body() createPostDto: CreatePostDto,
+    @CurrentUser() user: any,
+  ): Promise<PostEntity> {
+    return this.postsService.createPost(createPostDto, user);
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   async updatePost(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
     @Body() updatePostData: UpdatePostDto,
+    @CurrentUser() user: any,
   ): Promise<PostEntity> {
-    return this.postsService.updatePost(id, updatePostData);
+    return this.postsService.updatePost(id, updatePostData, user);
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(
     @Param('id', ParseIntPipe, PostExistsPipe) id: number,
