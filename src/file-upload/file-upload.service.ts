@@ -1,4 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { File } from './entities/file.entity';
+import { Repository } from 'typeorm';
+import { CloudinaryService } from './cloudinary/cloudinary.service';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
-export class FileUploadService {}
+export class FileUploadService {
+  constructor(
+    @InjectRepository(File)
+    private readonly fileRepository: Repository<File>,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
+
+  async uploadFile(
+    file: Express.Multer.File,
+    description: string | undefined,
+    user: User,
+  ): Promise<File> {
+    const cloudinaryResponse = await this.cloudinaryService.uploadFile(file);
+
+    const newFile = this.fileRepository.create({
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      publicId: cloudinaryResponse?.public_id,
+      url: cloudinaryResponse?.secure_url,
+      description,
+      uploader: user,
+    });
+
+    return this.fileRepository.save(newFile);
+  }
+
+  async getAllFile(): Promise<File[]> {
+    return this.fileRepository.find({
+      relations: ['uploader'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async deleteFile(fileId: string): Promise<void> {
+    const fileToBeDeleted = await this.fileRepository.findOne({
+      where: { id: fileId },
+    });
+
+    if (!fileToBeDeleted) {
+      throw new NotFoundException(`File with ID ${fileId} not found!`);
+    }
+
+    await this.cloudinaryService.deleteFile(fileToBeDeleted.publicId);
+
+    await this.fileRepository.remove(fileToBeDeleted);
+  }
+}
