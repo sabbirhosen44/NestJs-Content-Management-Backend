@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
+import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PostsModule } from './posts/posts.module';
     }),
     PostsModule,
     AuthModule,
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [
