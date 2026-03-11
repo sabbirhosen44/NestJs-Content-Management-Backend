@@ -1,9 +1,15 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 export class FindPostsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({
+    description: 'Search posts by title',
+    example: 'nestjs',
+    maxLength: 100,
+  })
   @IsOptional()
-  @IsString({ message: 'Title must be a string' })
-  @MaxLength(100, { message: `Title search can't exceed 100 characters` })
+  @IsString()
+  @MaxLength(100)
   title?: string;
 }

@@ -1,14 +1,27 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreatePostDto {
-  @IsNotEmpty({ message: 'Title is required' })
-  @IsString({ message: 'Title must be a string' })
-  @MinLength(3, { message: 'Title must be atleast 3 characters long' })
-  @MaxLength(50, { message: 'Title can not be longer than 50 characters' })
+  @ApiProperty({
+    description: 'Title of the post',
+    example: 'Understanding Dependency Injection in NestJS',
+    minLength: 3,
+    maxLength: 50,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(50)
   title: string;
 
-  @IsNotEmpty({ message: 'Content is required' })
-  @IsString({ message: 'Content must be a string' })
-  @MinLength(50, { message: 'Content must be atleast 50 characters long' })
+  @ApiProperty({
+    description: 'Main content of the post',
+    example:
+      'Dependency Injection is a design pattern used extensively in NestJS to manage dependencies between classes.',
+    minLength: 50,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(50)
   content: string;
 }

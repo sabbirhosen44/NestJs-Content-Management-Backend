@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     PostsModule,
     AuthModule,
     FileUploadModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [

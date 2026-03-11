@@ -1,29 +1,38 @@
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class UpdatePostDto {
+  @ApiPropertyOptional({
+    description: 'Title of the post',
+    example: 'Updated title',
+    minLength: 3,
+    maxLength: 50,
+  })
   @IsOptional()
-  @IsNotEmpty({ message: 'Title is required' })
-  @IsString({ message: 'Title must be a string' })
-  @MinLength(3, { message: 'Title must be atleast 3 characters long' })
-  @MaxLength(50, { message: 'Title can not be longer than 50 characters' })
+  @IsString()
+  @MinLength(3)
+  @MaxLength(50)
   title?: string;
 
+  @ApiPropertyOptional({
+    description: 'Content of the post',
+    example: 'Updated content of the blog post. Must be long enough.',
+    minLength: 50,
+  })
   @IsOptional()
-  @IsNotEmpty({ message: 'Content is required' })
-  @IsString({ message: 'Content must be a string' })
-  @MinLength(50, { message: 'Content must be atleast 50 characters long' })
+  @IsString()
+  @MinLength(50)
   content?: string;
 
+  @ApiPropertyOptional({
+    description: 'Author of the post',
+    example: 'Sabbir Hosen',
+    minLength: 2,
+    maxLength: 25,
+  })
   @IsOptional()
-  @IsNotEmpty({ message: 'Author is required' })
-  @IsString({ message: 'Author must be a string' })
-  @MinLength(2, { message: 'Author must be atleast 2 characters long' })
-  @MaxLength(25, { message: 'Author can not be longer than 25 characters' })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(25)
   authorName?: string;
 }
